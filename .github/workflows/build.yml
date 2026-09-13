@@ -1,0 +1,42 @@
+name: Build Fabric Server
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/build.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Build complete Fabric server
+        run: |
+          mkdir fabric-server
+
+          curl -fL \
+            "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.1.2/fabric-installer-1.1.2.jar" \
+            -o fabric-installer.jar
+
+          java -jar fabric-installer.jar server \
+            -dir fabric-server \
+            -mcversion 1.21.11 \
+            -loader 0.19.5 \
+            -downloadMinecraft
+
+          echo "===== SERVER FILES ====="
+          find fabric-server -maxdepth 3 -type f
+
+      - name: Upload finished server
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabric-server-1.21.11
+          path: fabric-server/
+          include-hidden-files: true
